@@ -14,7 +14,9 @@ import retrofit2.http.POST;
 public interface Api {
 
     @POST("fetch_sms_from_server.php")
-    Call<MainSmsResponse> fetchSms();
+    Call<MainSmsResponse> fetchSms(
+            @Field("DBPrefix") String DBPrefix
+    );
 
     @GET("DateTimeAndDelay.php")
     Call<TimeDelayResponse> DateTimeAndDelay();
@@ -23,7 +25,8 @@ public interface Api {
     @POST("update_sms_flag.php")
     Call<DefaultResponse> save_send_sms(
         @Field("curdate") String curdate,
-        @Field("jsonarray") String jsonarray
+        @Field("jsonarray") String jsonarray,
+        @Field("DBPrefix") String DBPrefix
     );
 
 }

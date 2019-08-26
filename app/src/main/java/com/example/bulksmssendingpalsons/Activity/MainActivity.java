@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fetchSmsFromServer() {
-        retrofit2.Call<MainSmsResponse> call1 = RetrofitClient.getInstance().getApi().fetchSms();
+        retrofit2.Call<MainSmsResponse> call1 = RetrofitClient.getInstance().getApi().fetchSms(Global.DBPrefix);
         call1.enqueue(new Callback<MainSmsResponse>() {
             @Override
             public void onResponse(retrofit2.Call<MainSmsResponse> call1, Response<MainSmsResponse> response) {
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
     private void saveSmsDateOnServer() {
         Gson gson = new GsonBuilder().create();
         JsonArray smsjson = gson.toJsonTree(smslist).getAsJsonArray();
-        Call<DefaultResponse> call = RetrofitClient.getInstance().getApi().save_send_sms(curdate,smsjson.toString());
+        Call<DefaultResponse> call = RetrofitClient.getInstance().getApi().save_send_sms(curdate,smsjson.toString(),Global.DBPrefix);
         call.enqueue(new Callback<DefaultResponse>() {
             @Override
             public void onResponse(Call<DefaultResponse> call, Response<DefaultResponse> response) {
