@@ -1,12 +1,19 @@
 package com.example.bulksmssendingpalsons.Activity;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
+import android.telephony.SmsManager;
+import android.telephony.SubscriptionInfo;
+import android.telephony.SubscriptionManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -88,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             date = dateFormatter.parse(Global.dateTime);
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -101,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                     @SuppressWarnings("unchecked")
                     public void run() {
                         //try {
-                            fetchSmsFromServer();
+                        fetchSmsFromServer();
                         /*} catch (Exception e) {
                             speak("Something went wrong!!!");
                             Toast.makeText(MainActivity.this, "Something went wrong!!!", Toast.LENGTH_LONG).show();
@@ -132,18 +139,19 @@ public class MainActivity extends AppCompatActivity {
     private void fetchSmsFromServer() {
         retrofit2.Call<MainSmsResponse> call1 = RetrofitClient.getInstance().getApi().fetchSms(Global.DBPrefix);
         call1.enqueue(new Callback<MainSmsResponse>() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public void onResponse(retrofit2.Call<MainSmsResponse> call1, Response<MainSmsResponse> response) {
                 smslist.clear();
-                MainSmsResponse res =  response.body();
+                MainSmsResponse res = response.body();
                 sim1count = Integer.parseInt(res.getSim1count());
                 sim2count = Integer.parseInt(res.getSim2count());
                 curdate = res.getCurdate();
-                if(res.getSMSList().size()>0){
+                if (res.getSMSList().size() > 0) {
                     smslist = res.getSMSList();
                     sendSMS();
                     saveSmsDateOnServer();
-                }else{
+                } else {
                     speak("SMS List is empty !");
                     Toast.makeText(MainActivity.this, "SMS List is empty !", Toast.LENGTH_SHORT).show();
                 }
@@ -157,26 +165,27 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void sendSMS() {
-        for(int i=0; i<smslist.size(); i++){
+        for (int i = 0; i < smslist.size(); i++) {
             SMSListItem model = smslist.get(i);
-            if(sim1count>0){
-                sendSmsViaSim1(model.getMobileno(),model.getTextMsg());
+            if (sim1count > 0) {
+                sendSmsViaSim1(model.getMobileno(), model.getTextMsg());
                 model.setSmsFlag("Y");
                 Date today = new Date();
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String dateToStr = format.format(today);
                 model.setSmsSendDate(dateToStr);
                 model.setSmsSentFromSim("1");
-            }else if(sim2count>0){
-                sendSmsViaSim2(model.getMobileno(),model.getTextMsg());
+            } else if (sim2count > 0) {
+                sendSmsViaSim2(model.getMobileno(), model.getTextMsg());
                 model.setSmsFlag("Y");
                 Date today = new Date();
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String dateToStr = format.format(today);
                 model.setSmsSendDate(dateToStr);
                 model.setSmsSentFromSim("2");
-            }else{
+            } else {
                 break;
             }
         }
@@ -185,15 +194,15 @@ public class MainActivity extends AppCompatActivity {
     private void saveSmsDateOnServer() {
         Gson gson = new GsonBuilder().create();
         JsonArray smsjson = gson.toJsonTree(smslist).getAsJsonArray();
-        Call<DefaultResponse> call = RetrofitClient.getInstance().getApi().save_send_sms(curdate,smsjson.toString(),Global.DBPrefix);
+        Call<DefaultResponse> call = RetrofitClient.getInstance().getApi().save_send_sms(curdate, smsjson.toString(), Global.DBPrefix);
         call.enqueue(new Callback<DefaultResponse>() {
             @Override
             public void onResponse(Call<DefaultResponse> call, Response<DefaultResponse> response) {
-                if(response.body().isError()) {
+                if (response.body().isError()) {
                     emptyInbox();
                     speak("Process Complete Successfully");
                     Toast.makeText(MainActivity.this, "Process Complete Successfully", Toast.LENGTH_SHORT).show();
-                }else{
+                } else {
                     speak(response.body().getErrormsg());
                     Toast.makeText(MainActivity.this, response.body().getErrormsg(), Toast.LENGTH_SHORT).show();
                 }
@@ -210,18 +219,81 @@ public class MainActivity extends AppCompatActivity {
     private void emptyInbox() {
         try {
             mContext.getContentResolver().delete(Uri.parse("content://sms/"), null, null);
-        } catch (Exception ex) {   }
+        } catch (Exception ex) {
+        }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void sendSmsViaSim1(String sendto, String textsms) {
-        if(SimUtil.sendSMS(this,0,sendto,null,textsms,null,null)) {
-            sim1count--;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            SubscriptionManager localSubscriptionManager = SubscriptionManager.from(this);
+            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    Activity#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for Activity#requestPermissions for more details.
+                return;
+            }
+            if (localSubscriptionManager.getActiveSubscriptionInfoCount() > 1) {
+                List localList = localSubscriptionManager.getActiveSubscriptionInfoList();
+
+                SubscriptionInfo simInfo1 = (SubscriptionInfo) localList.get(0);
+                //SubscriptionInfo simInfo2 = (SubscriptionInfo) localList.get(1);
+
+                //SendSMS From SIM One
+                SmsManager.getSmsManagerForSubscriptionId(simInfo1.getSubscriptionId()).sendTextMessage(sendto, null, textsms, null, null);
+                sim1count--;
+                //SendSMS From SIM Two
+                //SmsManager.getSmsManagerForSubscriptionId(simInfo2.getSubscriptionId()).sendTextMessage(sendto, null, textsms, null, null);
+            }
         }
+        /*else {
+            SmsManager.getDefault().sendTextMessage(sendto, null, textsms, null, null);
+
+        }*/
+        //SmsManager.getSmsManagerForSubscriptionId(0).sendTextMessage(sendto, null, textsms,null, null);
+        //if(SimUtil.sendSMS(this,0,sendto,null,textsms,null,null)) {
+
+        //}
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void sendSmsViaSim2(String sendto, String textsms) {
-        if(SimUtil.sendSMS(this,1,sendto,null,textsms,null,null)) {
-            sim2count--;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            SubscriptionManager localSubscriptionManager = SubscriptionManager.from(this);
+            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    Activity#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for Activity#requestPermissions for more details.
+                return;
+            }
+            if (localSubscriptionManager.getActiveSubscriptionInfoCount() > 1) {
+                List localList = localSubscriptionManager.getActiveSubscriptionInfoList();
+
+                //SubscriptionInfo simInfo1 = (SubscriptionInfo) localList.get(0);
+                SubscriptionInfo simInfo2 = (SubscriptionInfo) localList.get(1);
+
+                //SendSMS From SIM One
+                //SmsManager.getSmsManagerForSubscriptionId(simInfo1.getSubscriptionId()).sendTextMessage(sendto, null, textsms, null, null);
+
+                //SendSMS From SIM Two
+                SmsManager.getSmsManagerForSubscriptionId(simInfo2.getSubscriptionId()).sendTextMessage(sendto, null, textsms, null, null);
+                sim2count--;
+            }
         }
+        /*else {
+            SmsManager.getDefault().sendTextMessage(sendto, null, textsms, null, null);
+
+        }*/
+        //if(SimUtil.sendSMS(this,1,sendto,null,textsms,null,null)) {
+
+        //}
     }
 }
