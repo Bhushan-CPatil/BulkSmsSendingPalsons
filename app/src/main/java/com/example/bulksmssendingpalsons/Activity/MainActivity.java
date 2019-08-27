@@ -4,7 +4,9 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -14,6 +16,7 @@ import android.speech.tts.TextToSpeech;
 import android.telephony.SmsManager;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -54,24 +57,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /*mTTS = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if (status == TextToSpeech.SUCCESS) {
-                    int result = mTTS.setLanguage(Locale.GERMAN);
-
-                    if (result == TextToSpeech.LANG_MISSING_DATA
-                            || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                        Log.e("TTS", "Language not supported");
-                    } else {
-                        //speak();
-                    }
-                } else {
-                    Log.e("TTS", "Initialization failed");
-                }
-            }
-        });*/
-
         mTTS = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -107,12 +92,11 @@ public class MainActivity extends AppCompatActivity {
                 handler.post(new Runnable() {
                     @SuppressWarnings("unchecked")
                     public void run() {
-                        //try {
+                        try {
                         fetchSmsFromServer();
-                        /*} catch (Exception e) {
-                            speak("Something went wrong!!!");
+                        } catch (Exception e) {
                             Toast.makeText(MainActivity.this, "Something went wrong!!!", Toast.LENGTH_LONG).show();
-                        }*/
+                        }
                     }
                 });
             }
@@ -123,11 +107,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void speak(String text) {
-
-        /*mTTS.setPitch(pitch);
-        mTTS.setSpeechRate(speed);*/
-
-        //mTTS.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 
         int speechStatus = mTTS.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 
@@ -198,10 +177,10 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback<DefaultResponse>() {
             @Override
             public void onResponse(Call<DefaultResponse> call, Response<DefaultResponse> response) {
-                if (response.body().isError()) {
+                if (!response.body().isError()) {
                     emptyInbox();
-                    speak("Process Complete Successfully");
-                    Toast.makeText(MainActivity.this, "Process Complete Successfully", Toast.LENGTH_SHORT).show();
+                    speak(response.body().getErrormsg());
+                    Toast.makeText(MainActivity.this, response.body().getErrormsg(), Toast.LENGTH_SHORT).show();
                 } else {
                     speak(response.body().getErrormsg());
                     Toast.makeText(MainActivity.this, response.body().getErrormsg(), Toast.LENGTH_SHORT).show();
@@ -225,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void sendSmsViaSim1(String sendto, String textsms) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             SubscriptionManager localSubscriptionManager = SubscriptionManager.from(this);
             if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -249,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
                 //SendSMS From SIM Two
                 //SmsManager.getSmsManagerForSubscriptionId(simInfo2.getSubscriptionId()).sendTextMessage(sendto, null, textsms, null, null);
             }
-        }
+        }*/
         /*else {
             SmsManager.getDefault().sendTextMessage(sendto, null, textsms, null, null);
 
@@ -258,11 +237,38 @@ public class MainActivity extends AppCompatActivity {
         //if(SimUtil.sendSMS(this,0,sendto,null,textsms,null,null)) {
 
         //}
+
+
+        PendingIntent piSent = PendingIntent.getBroadcast(this, 0, new Intent("SMS_SENT"), 0);
+        PendingIntent piDelivered = PendingIntent.getBroadcast(this, 0, new Intent("SMS_DELIVERED"), 0);
+        TelephonyManager tMgr = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+        final ArrayList<Integer> simCardList = new ArrayList<>();
+        SubscriptionManager subscriptionManager;
+        subscriptionManager = SubscriptionManager.from(getApplicationContext());
+        if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    Activity#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for Activity#requestPermissions for more details.
+            return;
+        }
+        final List<SubscriptionInfo> subscriptionInfoList = subscriptionManager.getActiveSubscriptionInfoList();
+        for (SubscriptionInfo subscriptionInfo : subscriptionInfoList) {
+            int subscriptionId = subscriptionInfo.getSubscriptionId();
+            simCardList.add(subscriptionId);
+        }
+
+        int smsToSendFrom = simCardList.get(0); //assign your desired sim to send sms, or user selected choice
+        SmsManager.getSmsManagerForSubscriptionId(smsToSendFrom).sendTextMessage(sendto, null, textsms, piSent, piDelivered);
+        sim1count--;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void sendSmsViaSim2(String sendto, String textsms) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             SubscriptionManager localSubscriptionManager = SubscriptionManager.from(this);
             if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -287,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
                 SmsManager.getSmsManagerForSubscriptionId(simInfo2.getSubscriptionId()).sendTextMessage(sendto, null, textsms, null, null);
                 sim2count--;
             }
-        }
+        }*/
         /*else {
             SmsManager.getDefault().sendTextMessage(sendto, null, textsms, null, null);
 
@@ -295,5 +301,31 @@ public class MainActivity extends AppCompatActivity {
         //if(SimUtil.sendSMS(this,1,sendto,null,textsms,null,null)) {
 
         //}
+
+        PendingIntent piSent = PendingIntent.getBroadcast(this, 0, new Intent("SMS_SENT"), 0);
+        PendingIntent piDelivered = PendingIntent.getBroadcast(this, 0, new Intent("SMS_DELIVERED"), 0);
+        TelephonyManager tMgr = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+        final ArrayList<Integer> simCardList = new ArrayList<>();
+        SubscriptionManager subscriptionManager;
+        subscriptionManager = SubscriptionManager.from(getApplicationContext());
+        if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    Activity#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for Activity#requestPermissions for more details.
+            return;
+        }
+        final List<SubscriptionInfo> subscriptionInfoList = subscriptionManager.getActiveSubscriptionInfoList();
+        for (SubscriptionInfo subscriptionInfo : subscriptionInfoList) {
+            int subscriptionId = subscriptionInfo.getSubscriptionId();
+            simCardList.add(subscriptionId);
+        }
+
+        int smsToSendFrom = simCardList.get(1); //assign your desired sim to send sms, or user selected choice
+        SmsManager.getSmsManagerForSubscriptionId(smsToSendFrom).sendTextMessage(sendto, null, textsms, piSent, piDelivered);
+        sim2count--;
     }
 }
