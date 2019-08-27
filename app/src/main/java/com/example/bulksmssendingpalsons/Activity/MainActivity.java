@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -101,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         };
-        timer.schedule(doAsynchronousTask, date, 1000 * 60 * 60 * Global.delay);
+        timer.schedule(doAsynchronousTask, date, 1000 * 60 * Global.delay);
         //timer.schedule(doAsynchronousTask, 0, 3600000);
 
     }
@@ -178,9 +179,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<DefaultResponse> call, Response<DefaultResponse> response) {
                 if (!response.body().isError()) {
-                    emptyInbox();
-                    speak(response.body().getErrormsg());
-                    Toast.makeText(MainActivity.this, response.body().getErrormsg(), Toast.LENGTH_SHORT).show();
+
+                    String message = response.body().getErrormsg() + " and " + emptyInbox() + " SMS deleted.";
+                    speak(message);
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
                 } else {
                     speak(response.body().getErrormsg());
                     Toast.makeText(MainActivity.this, response.body().getErrormsg(), Toast.LENGTH_SHORT).show();
@@ -195,11 +197,26 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void emptyInbox() {
+    private int emptyInbox() {
+        Uri inboxUri = Uri.parse("content://sms/inbox");
+        int count = 0;
+        Cursor c = this.getContentResolver().query(inboxUri , null, null, null, null);
+        while (c.moveToNext()) {
+            try {
+                // Delete the SMS
+                String pid = c.getString(0); // Get id;
+                String uri = "content://sms/" + pid;
+                count = this.getContentResolver().delete(Uri.parse(uri),
+                        null, null);
+            } catch (Exception e) {
+            }
+        }
+        return count;
+        /*
         try {
             mContext.getContentResolver().delete(Uri.parse("content://sms/"), null, null);
         } catch (Exception ex) {
-        }
+        }*/
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)

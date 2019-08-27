@@ -127,6 +127,7 @@ public class LoginActivity extends AppCompatActivity {
     private void requestStoragePermission() {
         Dexter.withActivity(this)
                 .withPermissions(Manifest.permission.READ_PHONE_STATE,
+                        Manifest.permission.READ_SMS,
                         Manifest.permission.SEND_SMS
                 )
                 .withListener(new MultiplePermissionsListener() {
