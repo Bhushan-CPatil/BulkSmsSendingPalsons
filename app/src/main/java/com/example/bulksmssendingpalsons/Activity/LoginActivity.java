@@ -52,6 +52,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        Global.clearGlobal();
         progress = new ViewDialog(this);
         uid = findViewById(R.id.uid);
         pass = findViewById(R.id.pass);
@@ -87,6 +88,7 @@ public class LoginActivity extends AppCompatActivity {
 
             if(lid.equalsIgnoreCase(Global.username)){
                 if(password.equalsIgnoreCase(Global.password)){
+                    progress.show();
                     Call<TimeDelayResponse> call = RetrofitClient.getInstance().getApi().DateTimeAndDelay();
                     call.enqueue(new Callback<TimeDelayResponse>() {
 
@@ -124,9 +126,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private void requestStoragePermission() {
         Dexter.withActivity(this)
-                .withPermissions(Manifest.permission.SYSTEM_ALERT_WINDOW,
-                        Manifest.permission.SEND_SMS,
-                        Manifest.permission.VIBRATE
+                .withPermissions(
+                        Manifest.permission.SEND_SMS
                 )
                 .withListener(new MultiplePermissionsListener() {
                     @Override

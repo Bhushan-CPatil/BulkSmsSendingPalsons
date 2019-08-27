@@ -13,6 +13,7 @@ import retrofit2.http.POST;
 
 public interface Api {
 
+    @FormUrlEncoded
     @POST("fetch_sms_from_server.php")
     Call<MainSmsResponse> fetchSms(
             @Field("DBPrefix") String DBPrefix

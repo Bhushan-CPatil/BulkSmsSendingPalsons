@@ -20,8 +20,8 @@ public class RetrofitClient {
 
     private RetrofitClient() {
         final OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .readTimeout(10, TimeUnit.SECONDS)
-                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .connectTimeout(60, TimeUnit.SECONDS)
                 .build();
 
         Gson gson = new GsonBuilder()

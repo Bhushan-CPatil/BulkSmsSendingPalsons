@@ -8,7 +8,7 @@ public class Global {
     public static String DBPrefix = "Aqua-Basale";
     public static int delay = 1;
 
-    public void clearGlobal() {
+    public static void clearGlobal() {
         dateTime = null;
         delay = 1;
     }

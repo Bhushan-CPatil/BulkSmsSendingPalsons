@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTTS = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+        /*mTTS = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
                 if (status == TextToSpeech.SUCCESS) {
@@ -63,8 +63,26 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("TTS", "Initialization failed");
                 }
             }
-        });
+        });*/
 
+        mTTS = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+                    int ttsLang = mTTS.setLanguage(Locale.US);
+
+                    if (ttsLang == TextToSpeech.LANG_MISSING_DATA
+                            || ttsLang == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.e("TTS", "The Language is not supported!");
+                    } else {
+                        Log.i("TTS", "Language Supported.");
+                    }
+                    Log.i("TTS", "Initialization success.");
+                } else {
+                    Toast.makeText(getApplicationContext(), "TTS Initialization failed!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         Date date = null;
         try {
@@ -82,12 +100,12 @@ public class MainActivity extends AppCompatActivity {
                 handler.post(new Runnable() {
                     @SuppressWarnings("unchecked")
                     public void run() {
-                        try {
+                        //try {
                             fetchSmsFromServer();
-                        } catch (Exception e) {
+                        /*} catch (Exception e) {
                             speak("Something went wrong!!!");
                             Toast.makeText(MainActivity.this, "Something went wrong!!!", Toast.LENGTH_LONG).show();
-                        }
+                        }*/
                     }
                 });
             }
@@ -102,7 +120,13 @@ public class MainActivity extends AppCompatActivity {
         /*mTTS.setPitch(pitch);
         mTTS.setSpeechRate(speed);*/
 
-        mTTS.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+        //mTTS.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+
+        int speechStatus = mTTS.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+
+        if (speechStatus == TextToSpeech.ERROR) {
+            Log.e("TTS", "Error in converting Text to Speech!");
+        }
     }
 
     private void fetchSmsFromServer() {
@@ -190,12 +214,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendSmsViaSim1(String sendto, String textsms) {
-        SimUtil.sendSMS(this,0,sendto,null,textsms,null,null);
-        sim1count--;
+        if(SimUtil.sendSMS(this,0,sendto,null,textsms,null,null)) {
+            sim1count--;
+        }
     }
 
     private void sendSmsViaSim2(String sendto, String textsms) {
-        SimUtil.sendSMS(this,1,sendto,null,textsms,null,null);
-        sim2count--;
+        if(SimUtil.sendSMS(this,1,sendto,null,textsms,null,null)) {
+            sim2count--;
+        }
     }
 }
