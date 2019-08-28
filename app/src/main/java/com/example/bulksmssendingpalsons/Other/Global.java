@@ -3,8 +3,8 @@ package com.example.bulksmssendingpalsons.Other;
 public class Global {
 
     public static String dateTime = null;
-    public static String username = "palsons";
-    public static String password = "palsons@ABCD";
+    public static String username = "admin";
+    public static String password = "palsons123";
     public static String DBPrefix = "Aqua-Basale";
     public static int delay = 1;
 
