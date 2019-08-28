@@ -1,4 +1,4 @@
-package com.example.bulksmssendingpalsons.Other;
+package com.palsons.bulksmssendingpalsons.Other;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -7,7 +7,7 @@ import android.view.Window;
 
 import androidx.multidex.MultiDexApplication;
 
-import com.example.bulksmssendingpalsons.R;
+import com.palsons.bulksmssendingpalsons.R;
 
 
 public class ViewDialog extends MultiDexApplication {

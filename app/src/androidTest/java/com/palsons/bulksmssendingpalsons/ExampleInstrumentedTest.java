@@ -1,4 +1,4 @@
-package com.example.bulksmssendingpalsons;
+package com.palsons.bulksmssendingpalsons;
 
 import android.content.Context;
 

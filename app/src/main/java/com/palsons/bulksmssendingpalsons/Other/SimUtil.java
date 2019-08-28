@@ -1,4 +1,4 @@
-package com.example.bulksmssendingpalsons.Other;
+package com.palsons.bulksmssendingpalsons.Other;
 
 import android.app.PendingIntent;
 import android.content.Context;

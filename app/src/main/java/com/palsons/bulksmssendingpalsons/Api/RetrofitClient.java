@@ -1,4 +1,4 @@
-package com.example.bulksmssendingpalsons.Api;
+package com.palsons.bulksmssendingpalsons.Api;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -20,7 +20,7 @@ public class RetrofitClient {
 
     private RetrofitClient() {
         final OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .readTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(90, TimeUnit.SECONDS)
                 .connectTimeout(60, TimeUnit.SECONDS)
                 .build();
 

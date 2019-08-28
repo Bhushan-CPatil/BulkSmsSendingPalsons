@@ -1,4 +1,4 @@
-package com.example.bulksmssendingpalsons.model;
+package com.palsons.bulksmssendingpalsons.model;
 
 import java.util.List;
 import com.google.gson.annotations.SerializedName;

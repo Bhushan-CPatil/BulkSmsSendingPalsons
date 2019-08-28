@@ -1,4 +1,4 @@
-package com.example.bulksmssendingpalsons.Activity;
+package com.palsons.bulksmssendingpalsons.Activity;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,8 +8,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,13 +19,12 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.bulksmssendingpalsons.Api.RetrofitClient;
-import com.example.bulksmssendingpalsons.Other.Global;
-import com.example.bulksmssendingpalsons.Other.SimUtil;
-import com.example.bulksmssendingpalsons.R;
-import com.example.bulksmssendingpalsons.model.DefaultResponse;
-import com.example.bulksmssendingpalsons.model.MainSmsResponse;
-import com.example.bulksmssendingpalsons.model.SMSListItem;
+import com.palsons.bulksmssendingpalsons.Api.RetrofitClient;
+import com.palsons.bulksmssendingpalsons.Other.Global;
+import com.palsons.bulksmssendingpalsons.R;
+import com.palsons.bulksmssendingpalsons.model.DefaultResponse;
+import com.palsons.bulksmssendingpalsons.model.MainSmsResponse;
+import com.palsons.bulksmssendingpalsons.model.SMSListItem;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -139,8 +136,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<MainSmsResponse> call1, Throwable t) {
-                speak("Failed to fetch SMS from server !");
-                Toast.makeText(MainActivity.this, "Failed to fetch SMS from server !", Toast.LENGTH_SHORT).show();
+                speak("SMS List is empty !");
+                Toast.makeText(MainActivity.this, "SMS List is empty !", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -172,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveSmsDateOnServer() {
+        //Log.d("curdate--->",curdate);
         Gson gson = new GsonBuilder().create();
         JsonArray smsjson = gson.toJsonTree(smslist).getAsJsonArray();
         Call<DefaultResponse> call = RetrofitClient.getInstance().getApi().save_send_sms(curdate, smsjson.toString(), Global.DBPrefix);
@@ -180,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<DefaultResponse> call, Response<DefaultResponse> response) {
                 if (!response.body().isError()) {
 
-                    String message = response.body().getErrormsg() + " and " + emptyInbox() + " SMS deleted.";
+                    String message = response.body().getErrormsg();// + " and " + emptyInbox() + " SMS deleted.";
                     speak(message);
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
                 } else {
@@ -197,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private int emptyInbox() {
+    /*private int emptyInbox() {
         Uri inboxUri = Uri.parse("content://sms/inbox");
         int count = 0;
         Cursor c = this.getContentResolver().query(inboxUri , null, null, null, null);
@@ -212,12 +210,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return count;
-        /*
+        *//*
         try {
             mContext.getContentResolver().delete(Uri.parse("content://sms/"), null, null);
         } catch (Exception ex) {
-        }*/
-    }
+        }*//*
+    }*/
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void sendSmsViaSim1(String sendto, String textsms) {

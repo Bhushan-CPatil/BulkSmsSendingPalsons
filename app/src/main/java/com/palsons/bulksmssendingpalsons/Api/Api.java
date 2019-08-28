@@ -1,9 +1,9 @@
-package com.example.bulksmssendingpalsons.Api;
+package com.palsons.bulksmssendingpalsons.Api;
 
 
-import com.example.bulksmssendingpalsons.model.DefaultResponse;
-import com.example.bulksmssendingpalsons.model.MainSmsResponse;
-import com.example.bulksmssendingpalsons.model.TimeDelayResponse;
+import com.palsons.bulksmssendingpalsons.model.DefaultResponse;
+import com.palsons.bulksmssendingpalsons.model.MainSmsResponse;
+import com.palsons.bulksmssendingpalsons.model.TimeDelayResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Field;

@@ -1,4 +1,4 @@
-package com.example.bulksmssendingpalsons.Activity;
+package com.palsons.bulksmssendingpalsons.Activity;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,11 +15,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.bulksmssendingpalsons.Api.RetrofitClient;
-import com.example.bulksmssendingpalsons.Other.Global;
-import com.example.bulksmssendingpalsons.Other.ViewDialog;
-import com.example.bulksmssendingpalsons.R;
-import com.example.bulksmssendingpalsons.model.TimeDelayResponse;
+import com.palsons.bulksmssendingpalsons.Api.RetrofitClient;
+import com.palsons.bulksmssendingpalsons.Other.Global;
+import com.palsons.bulksmssendingpalsons.Other.ViewDialog;
+import com.palsons.bulksmssendingpalsons.R;
+import com.palsons.bulksmssendingpalsons.model.TimeDelayResponse;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -127,7 +127,6 @@ public class LoginActivity extends AppCompatActivity {
     private void requestStoragePermission() {
         Dexter.withActivity(this)
                 .withPermissions(Manifest.permission.READ_PHONE_STATE,
-                        Manifest.permission.READ_SMS,
                         Manifest.permission.SEND_SMS
                 )
                 .withListener(new MultiplePermissionsListener() {

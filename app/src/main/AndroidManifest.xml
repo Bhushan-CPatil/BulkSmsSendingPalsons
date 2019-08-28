@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution"
-    package="com.example.bulksmssendingpalsons">
+    package="com.palsons.bulksmssendingpalsons">
 
     <dist:module dist:instant="true" />
 
@@ -9,10 +9,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.WRITE_SMS" />
+    <!--<uses-permission android:name="android.permission.WRITE_SMS" />-->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    <uses-permission android:name="android.permission.READ_SMS"/>
+    <!--<uses-permission android:name="android.permission.READ_SMS"/>-->
 
     <application
         android:allowBackup="true"
@@ -22,14 +22,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Activity.LoginActivity">
+        <activity android:name="com.palsons.bulksmssendingpalsons.Activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activity.MainActivity">
+        <activity android:name="com.palsons.bulksmssendingpalsons.Activity.MainActivity">
 
         </activity>
     </application>
