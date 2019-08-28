@@ -136,8 +136,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<MainSmsResponse> call1, Throwable t) {
-                speak("SMS List is empty !");
-                Toast.makeText(MainActivity.this, "SMS List is empty !", Toast.LENGTH_SHORT).show();
+                speak("Failed to fetch SMS from server !");
+                Toast.makeText(MainActivity.this, "Failed to fetch SMS from server !", Toast.LENGTH_SHORT).show();
             }
         });
     }
