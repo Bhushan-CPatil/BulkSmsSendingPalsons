@@ -169,7 +169,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveSmsDateOnServer() {
-        //Log.d("curdate--->",curdate);
         Gson gson = new GsonBuilder().create();
         JsonArray smsjson = gson.toJsonTree(smslist).getAsJsonArray();
         Call<DefaultResponse> call = RetrofitClient.getInstance().getApi().save_send_sms(curdate, smsjson.toString(), Global.DBPrefix);

@@ -90,6 +90,7 @@ public class LoginActivity extends AppCompatActivity {
 
             if(lid.equalsIgnoreCase(Global.username)){
                 if(password.equalsIgnoreCase(Global.password)){
+
                     checkLogin();
                 }else{
                     Toast.makeText(this, "Wrong Password !", Toast.LENGTH_SHORT).show();

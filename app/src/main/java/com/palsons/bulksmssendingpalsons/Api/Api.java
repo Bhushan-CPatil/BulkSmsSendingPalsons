@@ -35,5 +35,4 @@ public interface Api {
     Call<DefaultResponse> checkLogin(
         @Field("DBPrefix") String DBPrefix
     );
-
 }
