@@ -19,6 +19,7 @@ import com.palsons.bulksmssendingpalsons.Api.RetrofitClient;
 import com.palsons.bulksmssendingpalsons.Other.Global;
 import com.palsons.bulksmssendingpalsons.Other.ViewDialog;
 import com.palsons.bulksmssendingpalsons.R;
+import com.palsons.bulksmssendingpalsons.model.DefaultResponse;
 import com.palsons.bulksmssendingpalsons.model.TimeDelayResponse;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -57,6 +58,7 @@ public class LoginActivity extends AppCompatActivity {
         uid = findViewById(R.id.uid);
         pass = findViewById(R.id.pass);
         login = findViewById(R.id.login);
+        getData();
     }
 
     public void DoLogin(View view) {
@@ -88,31 +90,7 @@ public class LoginActivity extends AppCompatActivity {
 
             if(lid.equalsIgnoreCase(Global.username)){
                 if(password.equalsIgnoreCase(Global.password)){
-                    progress.show();
-                    Call<TimeDelayResponse> call = RetrofitClient.getInstance().getApi().DateTimeAndDelay();
-                    call.enqueue(new Callback<TimeDelayResponse>() {
-
-                        @Override
-                        public void onResponse(Call<TimeDelayResponse> call, Response<TimeDelayResponse> response) {
-                            TimeDelayResponse res = response.body();
-                            progress.dismiss();
-                            Global.dateTime = res.getDatetime();
-                            Global.delay = Integer.parseInt(res.getRepeatAfter());
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            startActivity(intent);
-                            finish();
-                        }
-
-                        @Override
-                        public void onFailure(Call<TimeDelayResponse> call, Throwable t) {
-                            progress.dismiss();
-                            if (t instanceof IOException) {
-                                Toast.makeText(LoginActivity.this, "Internet Issue ! Failed to process your request !", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(LoginActivity.this, "Data Conversion Issue ! Contact to admin", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
+                    checkLogin();
                 }else{
                     Toast.makeText(this, "Wrong Password !", Toast.LENGTH_SHORT).show();
                 }
@@ -122,6 +100,54 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             requestStoragePermission();
         }
+    }
+
+    private void getData(){
+        progress.show();
+        Call<TimeDelayResponse> call = RetrofitClient.getInstance().getApi().DateTimeAndDelay();
+        call.enqueue(new Callback<TimeDelayResponse>() {
+
+            @Override
+            public void onResponse(Call<TimeDelayResponse> call, Response<TimeDelayResponse> response) {
+                TimeDelayResponse res = response.body();
+                progress.dismiss();
+                Global.dateTime = res.getDatetime();
+                Global.delay = Integer.parseInt(res.getRepeatAfter());
+                Global.username = res.getId();
+                Global.password = res.getPassword();
+            }
+
+            @Override
+            public void onFailure(Call<TimeDelayResponse> call, Throwable t) {
+                progress.dismiss();
+                if (t instanceof IOException) {
+                    Toast.makeText(LoginActivity.this, "Internet Issue ! Failed to process your request !", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(LoginActivity.this, "Data Conversion Issue ! Contact to admin", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void checkLogin() {
+        Call<DefaultResponse> call = RetrofitClient.getInstance().getApi().checkLogin(Global.DBPrefix);
+        call.enqueue(new Callback<DefaultResponse>() {
+            @Override
+            public void onResponse(Call<DefaultResponse> call, Response<DefaultResponse> response) {
+                if (!response.body().isError()) {
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(LoginActivity.this, response.body().getErrormsg(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DefaultResponse> call, Throwable t) {
+                Toast.makeText(LoginActivity.this, "Failed to login !", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void requestStoragePermission() {

@@ -30,4 +30,10 @@ public interface Api {
         @Field("DBPrefix") String DBPrefix
     );
 
+    @FormUrlEncoded
+    @POST("BulkSMSLoginCheck.php")
+    Call<DefaultResponse> checkLogin(
+        @Field("DBPrefix") String DBPrefix
+    );
+
 }
